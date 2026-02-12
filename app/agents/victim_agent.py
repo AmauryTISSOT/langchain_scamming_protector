@@ -1,15 +1,16 @@
-from langchain_openai import ChatOpenAI
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.memory import ConversationBufferMemory
+from langchain_groq import ChatGroq
 
 from app.tools.sound_tools import dog_bark, doorbell, coughing_fit, tv_background
 
 
 class VictimAgent:
-    def __init__(self):
-        self.llm = ChatOpenAI(
-            model="gpt-4o-mini",
+    def __init__(self,api_key):
+        self.llm = ChatGroq(
+            api_key=api_key,
+            model="llama-3.1-8b-instant",
             temperature=0.7
         )
 
