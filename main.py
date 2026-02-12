@@ -10,8 +10,16 @@ if not api_key:
     raise ValueError("GROQ_API_KEY manquante dans le fichier .env")
 
 victim = VictimAgent(api_key)
-print(victim.respond("Hello Jeanne, this is your bank calling. We need to verify your account information."))
-print("Simulation started. Type 'exit' to stop.\n")
+# Message de démarrage (en français)
+intro = "Bonjour madame Dubois, je suis du service sécurité de votre banque. Nous devons vérifier votre compte."
+first_response = victim.respond(
+    user_input=intro,
+    objective="Gagner du temps, rester polie, faire semblant d'être confuse, et ne donner aucune information.",
+    constraint="Aucune"
+)
+
+print(intro)
+print(first_response+"\n")
 
 while True:
     user_input = input("Scammer: ")
@@ -24,4 +32,3 @@ while True:
         constraint="None"
     )
 
-    print(f"Jeanne: {response}\n")

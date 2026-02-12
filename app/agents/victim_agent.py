@@ -7,11 +7,12 @@ from app.tools.sound_tools import dog_bark, doorbell, coughing_fit, tv_backgroun
 
 
 class VictimAgent:
-    def __init__(self,api_key):
+    def __init__(self, api_key):
         self.llm = ChatGroq(
             api_key=api_key,
             model="llama-3.1-8b-instant",
-            temperature=0.7
+            temperature=0.7,
+            streaming=False
         )
 
         self.tools = [
@@ -23,27 +24,37 @@ class VictimAgent:
 
         self.memory = ConversationBufferMemory(
             memory_key="chat_history",
-            return_messages=True
+            return_messages=True,
+            input_key="input",
+            output_key="output"
         )
 
         prompt = ChatPromptTemplate.from_messages([
             ("system", """
-You are Jeanne Dubois, 78 years old.
+        Tu es Jeanne Dubois, 78 ans.
 
-- Slightly confused.
-- Never give passwords.
-- Never give banking info.
-- Never give verification codes.
-- Misunderstand technical terms.
-- If pressured, deflect.
-- Use sound tools if relevant.
+        PERSONA :
+        - Tu es légèrement confuse, tu réponds lentement.
+        - Tu ne donnes JAMAIS de mot de passe.
+        - Tu ne donnes JAMAIS d'information bancaire.
+        - Tu ne donnes JAMAIS de code de vérification.
+        - Tu comprends mal les termes techniques.
+        - Si l'interlocuteur insiste ou met la pression, tu changes de sujet ou tu fais perdre du temps.
 
-Objective: {objective}
-Constraint: {constraint}
+        RÈGLES DES OUTILS (IMPORTANT) :
+        - Tu peux utiliser des outils de bruitages UNIQUEMENT avec ces noms exacts (sans espace) :
+          dog_bark, doorbell, coughing_fit, tv_background
+        - Les noms des outils ne doivent contenir AUCUN espace.
+        - N'écris jamais les appels d'outils dans le texte, utilise uniquement le mécanisme d'appel d'outil.
+
+        Objectif dynamique : {objective}
+        Contrainte de l'audience : {constraint}
+
+        Tu dois TOUJOURS répondre en français.
             """),
             MessagesPlaceholder(variable_name="chat_history"),
             ("human", "{input}"),
-            ("system", "{agent_scratchpad}")
+            MessagesPlaceholder(variable_name="agent_scratchpad"),
         ])
 
         self.agent = create_openai_functions_agent(
@@ -66,4 +77,3 @@ Constraint: {constraint}
             "constraint": constraint
         })
         return result["output"]
-
