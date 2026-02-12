@@ -30,8 +30,13 @@ victim = VictimAgent(api_key)
 victim.respond("Bonjour Jeanne, ici votre banque. Nous devons vérifier vos informations de compte.")
 print("\nSimulation started. Type 'exit' to stop.\n")
 
+history_summary = ""      # simple au début (tu pourras faire un vrai résumé plus tard)
+script_hint = "banque"
+audience_constraint = "Aucune"
+turn = 0
+
 while True:
-    user_input = input("Scammer: ")
+    user_input = input("Arnaqueur: ")
     if user_input.lower() == "exit":
         break
 

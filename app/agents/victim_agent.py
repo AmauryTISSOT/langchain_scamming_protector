@@ -26,7 +26,8 @@ class VictimAgent:
         self.llm = ChatGroq(
             api_key=api_key,
             model="llama-3.1-8b-instant",
-            temperature=0.7
+            temperature=0.7,
+            streaming=False
         )
 
         self.tools = []
@@ -77,7 +78,7 @@ Rappel : Parle naturellement comme Jeanne le ferait ! Uniquement du dialogue en 
             ("system", system_prompt),
             MessagesPlaceholder(variable_name="chat_history"),
             ("human", "{input}"),
-            ("system", "{agent_scratchpad}")
+            MessagesPlaceholder(variable_name="agent_scratchpad"),
         ])
 
         self.agent = create_openai_functions_agent(
