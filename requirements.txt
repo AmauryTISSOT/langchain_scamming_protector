@@ -3,3 +3,6 @@ openai>=1.0.0
 python-dotenv==1.0.1
 tiktoken>=0.5.0
 langchain-groq
+langchain-google-community[texttospeech]
+pygame>=2.1.0
+pytest>=7.0.0
