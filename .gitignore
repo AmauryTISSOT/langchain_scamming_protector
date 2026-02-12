@@ -1,3 +1,4 @@
+*.pyc
 # Environment variables
 .env
 
