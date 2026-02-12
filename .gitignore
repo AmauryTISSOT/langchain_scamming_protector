@@ -5,6 +5,7 @@
 # Claude code
 .claude
 prd.md
+CLAUDE.md
 
 # Python-generated files
 __pycache__/
