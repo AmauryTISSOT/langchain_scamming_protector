@@ -1,3 +1,20 @@
-.env
-__pycache__/
 *.pyc
+# Environment variables
+.env
+
+# Claude code
+.claude
+prd.md
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+*.log
+.coverage
+
+# Virtual environments
+.venv
