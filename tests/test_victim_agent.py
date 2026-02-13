@@ -1,6 +1,8 @@
 import re
 from unittest.mock import patch, MagicMock
 
+from langchain_core.messages import HumanMessage, AIMessage
+
 from app.agents.victim_agent import VictimAgent
 
 
@@ -123,3 +125,39 @@ class TestRespond:
         result = agent.respond("Hello")
         mock_time.sleep.assert_called_with(VictimAgent.PAUSE_DURATION)
         assert "[PAUSE]" not in result
+
+
+class TestGetHistorySummary:
+    def test_empty_memory_returns_aucun_historique(self, mock_no_google_credentials):
+        agent = _create_agent()
+        assert agent.get_history_summary() == "Aucun historique"
+
+    def test_with_messages(self, mock_no_google_credentials):
+        agent = _create_agent()
+        agent.memory.chat_memory.messages = [
+            HumanMessage(content="Bonjour, ici votre banque."),
+            AIMessage(content="Ah bonjour [DOG_BARK] oh Poupoune !"),
+        ]
+        result = agent.get_history_summary()
+        assert "Arnaqueur: Bonjour, ici votre banque." in result
+        assert "Jeanne: Ah bonjour  oh Poupoune !" in result
+        assert "[DOG_BARK]" not in result
+
+    def test_truncates_long_messages(self, mock_no_google_credentials):
+        agent = _create_agent()
+        long_msg = "A" * 150
+        agent.memory.chat_memory.messages = [
+            HumanMessage(content=long_msg),
+        ]
+        result = agent.get_history_summary()
+        assert result.endswith("...")
+        assert len(result.split(": ", 1)[1]) == 103  # 100 chars + "..."
+
+    def test_respects_max_turns(self, mock_no_google_credentials):
+        agent = _create_agent()
+        agent.memory.chat_memory.messages = [
+            HumanMessage(content=f"Message {i}") for i in range(20)
+        ]
+        result = agent.get_history_summary(max_turns=2)
+        lines = result.strip().split("\n")
+        assert len(lines) == 4  # 2 turns * 2 messages
