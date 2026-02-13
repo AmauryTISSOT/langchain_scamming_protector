@@ -140,6 +140,76 @@ Rappel : Parle naturellement comme Jeanne le ferait ! Uniquement du dialogue en 
         # Return clean text (without tags) for logging
         return self._TAG_PATTERN.sub("", output).strip()
 
+    def respond_web(self, user_input, objective="Respond slowly.", constraint="None"):
+        """Web-compatible respond: returns structured segments instead of playing audio."""
+        import base64
+
+        result = self.executor.invoke({
+            "input": user_input,
+            "objective": objective,
+            "constraint": constraint
+        })
+        output = result["output"]
+
+        segments = []
+        raw_segments = self._TAG_PATTERN.split(output)
+
+        for segment in raw_segments:
+            tag = segment.strip("[]").upper()
+            if tag in SOUND_TAGS:
+                segments.append({
+                    "type": "sound",
+                    "sound_tag": tag,
+                    "sound_file": f"/static/sounds/{SOUND_TAGS[tag]}"
+                })
+            elif tag == "PAUSE":
+                segments.append({
+                    "type": "pause",
+                    "duration": self.PAUSE_DURATION
+                })
+            else:
+                text = segment.strip()
+                if not text:
+                    continue
+                seg = {"type": "text", "content": text}
+                if self.tts_client:
+                    try:
+                        audio_bytes = self._synthesize_bytes(text)
+                        if audio_bytes:
+                            seg["tts_audio"] = base64.b64encode(audio_bytes).decode("ascii")
+                    except Exception:
+                        pass
+                segments.append(seg)
+
+        clean_text = self._TAG_PATTERN.sub("", output).strip()
+        return segments, clean_text
+
+    def _synthesize_bytes(self, text):
+        """Synthesize text to MP3 bytes (no temp file)."""
+        from google.cloud import texttospeech
+
+        text = self._clean_for_tts(text)
+        if not text:
+            return None
+
+        escaped = (text.replace("&", "&amp;").replace("<", "&lt;")
+                       .replace(">", "&gt;").replace('"', "&quot;"))
+        ssml = (f'<speak><prosody pitch="-8st" rate="70%">'
+                f'{escaped}</prosody></speak>')
+
+        response = self.tts_client.synthesize_speech(
+            input=texttospeech.SynthesisInput(ssml=ssml),
+            voice=texttospeech.VoiceSelectionParams(
+                language_code="fr-FR",
+                name="fr-FR-Neural2-E",
+                ssml_gender=texttospeech.SsmlVoiceGender.FEMALE,
+            ),
+            audio_config=texttospeech.AudioConfig(
+                audio_encoding=texttospeech.AudioEncoding.MP3
+            ),
+        )
+        return response.audio_content
+
     @staticmethod
     def _clean_for_tts(text):
         """Remove stage directions like (pause), (rire), *tousse* before TTS."""

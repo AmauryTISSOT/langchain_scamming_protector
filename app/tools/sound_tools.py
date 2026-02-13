@@ -2,11 +2,15 @@
 
 import os
 import random
-import pygame
 from langchain.tools import tool
 
-# Initialize pygame mixer once
-pygame.mixer.init()
+# Initialize pygame mixer (optional — not needed for web/server mode)
+try:
+    import pygame
+    pygame.mixer.init()
+    _PYGAME_AVAILABLE = True
+except (ImportError, Exception):
+    _PYGAME_AVAILABLE = False
 
 # Path to sounds directory
 _SOUNDS_DIR = os.path.join(os.path.dirname(__file__), "sounds")
@@ -14,6 +18,8 @@ _SOUNDS_DIR = os.path.join(os.path.dirname(__file__), "sounds")
 
 def _play_sound(filename):
     """Play an MP3 file from the sounds directory."""
+    if not _PYGAME_AVAILABLE:
+        return
     filepath = os.path.join(_SOUNDS_DIR, filename)
     try:
         if not pygame.mixer.get_init():
