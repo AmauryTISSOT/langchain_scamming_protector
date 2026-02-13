@@ -56,6 +56,12 @@ class AutoStartResponse(BaseModel):
 
 class AutoNextRequest(BaseModel):
     session_id: str
+    user_choice: Optional[str] = None  # "1"|"2"|"3"|"4"
+
+
+class InterventionRequired(BaseModel):
+    message: str
+    choices: List[str]
 
 
 class AutoTurnResponse(BaseModel):
@@ -67,6 +73,7 @@ class AutoTurnResponse(BaseModel):
     scammer_text: str
     director_info: Optional[DirectorInfo] = None
     is_complete: bool
+    intervention_required: Optional[InterventionRequired] = None
 
 
 class AutoStopRequest(BaseModel):

@@ -7,6 +7,7 @@ import {
 } from "./api";
 import type { ChatMessage, Segment } from "./types";
 import ChatWindow from "./components/ChatWindow";
+import InterventionModal from "./components/InterventionModal";
 import { useAudioQueue } from "./hooks/useAudioQueue";
 
 let msgId = 0;
@@ -20,6 +21,11 @@ export default function App() {
   const [maxTurns] = useState(15);
   const { play, isPlaying } = useAudioQueue();
   const stoppedRef = useRef(false);
+  const [interventionData, setInterventionData] = useState<{
+    message: string;
+    choices: string[];
+    onChoice: (choice: string) => void;
+  } | null>(null);
 
   useEffect(() => {
     createSession().then(setSessionId).catch(console.error);
@@ -60,32 +66,47 @@ export default function App() {
       addMessage("scammer", startRes.scammer_text, startRes.scammer_segments);
       setIsLoading(false);
 
-      // Play scammer audio
       await playSegments(startRes.scammer_segments);
 
-      // 2. Loop turns
+      // 2. Loop turns with intervention support
       let complete = false;
+      let pendingChoice: string | undefined = undefined;
+
       while (!complete && !stoppedRef.current) {
         setIsLoading(true);
-        const turnRes = await getNextTurn(sessionId);
+        const turnRes = await getNextTurn(sessionId, pendingChoice);
+        pendingChoice = undefined;
         setTurnCount(turnRes.turn_number);
         setIsLoading(false);
 
         if (stoppedRef.current) break;
 
-        // Show and play Jeanne's response
+        // Afficher et jouer la réponse de Jeanne
         addMessage("jeanne", turnRes.victim_text, turnRes.victim_segments);
         await playSegments(turnRes.victim_segments);
 
         if (stoppedRef.current) break;
 
-        // Show and play scammer's response (if not complete)
+        // Vérifier si intervention requise
+        if (turnRes.intervention_required) {
+          // Attendre le choix utilisateur via modale
+          const choice = await new Promise<string>((resolve) => {
+            setInterventionData({
+              message: turnRes.intervention_required!.message,
+              choices: turnRes.intervention_required!.choices,
+              onChoice: resolve,
+            });
+          });
+          setInterventionData(null);
+          pendingChoice = choice;
+
+          // Continuer la boucle, le prochain tour appliquera le choix
+          continue;
+        }
+
+        // Afficher et jouer la réponse du scammer (si pas terminé)
         if (!turnRes.is_complete && turnRes.scammer_text) {
-          addMessage(
-            "scammer",
-            turnRes.scammer_text,
-            turnRes.scammer_segments
-          );
+          addMessage("scammer", turnRes.scammer_text, turnRes.scammer_segments);
           await playSegments(turnRes.scammer_segments);
         }
 
@@ -93,10 +114,7 @@ export default function App() {
       }
     } catch (err) {
       console.error(err);
-      addMessage(
-        "jeanne",
-        "Oh la la, la ligne a coupé..."
-      );
+      addMessage("jeanne", "Oh la la, la ligne a coupé...");
     } finally {
       setIsRunning(false);
       setIsLoading(false);
@@ -176,6 +194,14 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {interventionData && (
+        <InterventionModal
+          message={interventionData.message}
+          choices={interventionData.choices}
+          onChoice={interventionData.onChoice}
+        />
+      )}
     </div>
   );
 }

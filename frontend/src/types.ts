@@ -33,6 +33,11 @@ export interface DirectorInfo {
   objective_used: string;
 }
 
+export interface InterventionRequired {
+  message: string;
+  choices: string[];
+}
+
 export interface AutoTurnResponse {
   session_id: string;
   turn_number: number;
@@ -42,4 +47,5 @@ export interface AutoTurnResponse {
   scammer_text: string;
   director_info?: DirectorInfo;
   is_complete: boolean;
+  intervention_required?: InterventionRequired;
 }

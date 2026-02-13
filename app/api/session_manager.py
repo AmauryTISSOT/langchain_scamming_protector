@@ -19,6 +19,7 @@ class SessionState:
     stage: str = "1"
     stage_description: str = ""
     script_hint: str = "banque"
+    pending_intervention: bool = False  # Indique qu'une intervention est attendue
 
 
 class SessionManager:

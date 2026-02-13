@@ -39,12 +39,16 @@ export async function startAutoConversation(
 }
 
 export async function getNextTurn(
-  sessionId: string
+  sessionId: string,
+  userChoice?: string
 ): Promise<AutoTurnResponse> {
   const res = await fetch(`${API_BASE}/api/auto-conversation/next`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ session_id: sessionId }),
+    body: JSON.stringify({
+      session_id: sessionId,
+      user_choice: userChoice || null
+    }),
   });
   if (!res.ok) throw new Error("Failed to get next turn");
   return res.json();
