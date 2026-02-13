@@ -98,6 +98,24 @@ Rappel : Parle naturellement comme Jeanne le ferait ! Uniquement du dialogue en 
     _ALL_TAGS = list(SOUND_TAGS.keys()) + ["PAUSE"]
     _TAG_PATTERN = re.compile(r"(\[(?:" + "|".join(_ALL_TAGS) + r")\])", re.IGNORECASE)
 
+    def get_history_summary(self, max_turns: int = 5) -> str:
+        """Extract last N exchanges from memory, formatted for the Director."""
+        messages = self.memory.chat_memory.messages
+        if not messages:
+            return "Aucun historique"
+
+        # Take last max_turns*2 messages (each turn = human + ai)
+        recent = messages[-(max_turns * 2):]
+        lines = []
+        for msg in recent:
+            role = "Arnaqueur" if msg.type == "human" else "Jeanne"
+            content = self._TAG_PATTERN.sub("", msg.content).strip()
+            if len(content) > 100:
+                content = content[:100] + "..."
+            lines.append(f"{role}: {content}")
+
+        return "\n".join(lines)
+
     PAUSE_DURATION = 1.5  # seconds
 
     def respond(self, user_input, objective="Respond slowly.", constraint="None"):
