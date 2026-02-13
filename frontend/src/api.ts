@@ -1,4 +1,4 @@
-import type { ChatResponse } from "./types";
+import type { ChatResponse, AutoStartResponse, AutoTurnResponse } from "./types";
 
 const API_BASE = "http://localhost:8000";
 
@@ -24,4 +24,38 @@ export async function sendMessage(
 
 export async function deleteSession(sessionId: string): Promise<void> {
   await fetch(`${API_BASE}/api/sessions/${sessionId}`, { method: "DELETE" });
+}
+
+export async function startAutoConversation(
+  sessionId: string
+): Promise<AutoStartResponse> {
+  const res = await fetch(`${API_BASE}/api/auto-conversation/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ session_id: sessionId }),
+  });
+  if (!res.ok) throw new Error("Failed to start auto conversation");
+  return res.json();
+}
+
+export async function getNextTurn(
+  sessionId: string
+): Promise<AutoTurnResponse> {
+  const res = await fetch(`${API_BASE}/api/auto-conversation/next`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ session_id: sessionId }),
+  });
+  if (!res.ok) throw new Error("Failed to get next turn");
+  return res.json();
+}
+
+export async function stopAutoConversation(
+  sessionId: string
+): Promise<void> {
+  await fetch(`${API_BASE}/api/auto-conversation/stop`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ session_id: sessionId }),
+  });
 }

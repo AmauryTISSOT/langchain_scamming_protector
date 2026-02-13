@@ -42,3 +42,32 @@ class SessionInfoResponse(BaseModel):
     scam_type: Optional[str] = None
     current_stage: Optional[str] = None
     current_objective: Optional[str] = None
+
+
+class AutoStartRequest(BaseModel):
+    session_id: str
+
+
+class AutoStartResponse(BaseModel):
+    session_id: str
+    scammer_segments: List[Segment]
+    scammer_text: str
+
+
+class AutoNextRequest(BaseModel):
+    session_id: str
+
+
+class AutoTurnResponse(BaseModel):
+    session_id: str
+    turn_number: int
+    victim_segments: List[Segment]
+    victim_text: str
+    scammer_segments: List[Segment]
+    scammer_text: str
+    director_info: Optional[DirectorInfo] = None
+    is_complete: bool
+
+
+class AutoStopRequest(BaseModel):
+    session_id: str

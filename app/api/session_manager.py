@@ -3,13 +3,17 @@ from dataclasses import dataclass, field
 from typing import Dict, Optional
 from app.agents.victim_agent import VictimAgent
 from app.agents.director_agent import DirectorAgent
+from app.agents.scammer_agent import ScammerAgent
 
 
 @dataclass
 class SessionState:
     victim: VictimAgent
     director: DirectorAgent
+    scammer: ScammerAgent
     turn_count: int = 0
+    max_turns: int = 15
+    is_active: bool = False
     current_objective: str = "Répondre lentement et gagner du temps."
     scam_type: str = "inconnu"
     stage: str = "1"
@@ -27,6 +31,7 @@ class SessionManager:
         self._sessions[session_id] = SessionState(
             victim=VictimAgent(self._api_key),
             director=DirectorAgent(self._api_key),
+            scammer=ScammerAgent(self._api_key),
         )
         return session_id
 
