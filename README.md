@@ -182,10 +182,10 @@ http://localhost:5173
 ### Captures d'écran
 
 Exemple de conversation :
-![Capture d'écran 1](https://i.imgur.com/QYQo7vN.png)
+![Capture d'écran 1](capture_ecran/capture_1.png)
 
 Modale affichant les différents choix :
-![Capture d'écran 2](https://i.imgur.com/Zq6oL6D.png)
+![Capture d'écran 2](capture_ecran/capture_2.png)
 
 ---
 
